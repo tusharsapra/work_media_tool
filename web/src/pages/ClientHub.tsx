@@ -6,7 +6,11 @@ import { ClientCard } from "@/components/client/ClientCard";
 import { usePlanStore } from "@/store/usePlanStore";
 
 export function ClientHub() {
-  const clients = usePlanStore((s) => s.clients.filter((c) => !c.archived));
+  // Select the stable underlying array — filtering inside the selector returns a
+  // new reference on every read and trips React 19's useSyncExternalStore guard
+  // (error #185 / "Maximum update depth exceeded"). Filter in render instead.
+  const allClients = usePlanStore((s) => s.clients);
+  const clients = allClients.filter((c) => !c.archived);
 
   if (clients.length === 0) {
     return (

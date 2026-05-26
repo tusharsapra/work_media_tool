@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 import {
   Bar,
-  BarChart,
   CartesianGrid,
   Legend,
   Line,
