@@ -6,8 +6,9 @@ import { GeographyStrategy } from "./GeographyStrategy";
 import { PlatformRole } from "./PlatformRole";
 import { AIRecommendationsPlaceholder } from "./AIRecommendationsPlaceholder";
 import { RisksAndWatchouts } from "./RisksAndWatchouts";
+import { PlanningNotes } from "./PlanningNotes";
 
-export function StakeholderDashboard({ plan }: { plan: MediaPlan }) {
+export function StakeholderDashboard({ plan, clientId }: { plan: MediaPlan; clientId: string }) {
   return (
     <div className="space-y-8">
       <ExecutiveSummary plan={plan} />
@@ -17,6 +18,7 @@ export function StakeholderDashboard({ plan }: { plan: MediaPlan }) {
       <PlatformRole plan={plan} />
       <AIRecommendationsPlaceholder />
       <RisksAndWatchouts plan={plan} />
+      <PlanningNotes plan={plan} clientId={clientId} />
     </div>
   );
 }

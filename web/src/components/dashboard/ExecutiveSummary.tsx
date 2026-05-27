@@ -2,6 +2,7 @@ import type { MediaPlan } from "@mpa/shared";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { calculatePlanTotals } from "@/utils/forecastEngine";
+import { generatePlanSummary } from "@/utils/insightEngine";
 import { OBJECTIVES } from "@/data/defaults";
 import {
   formatCurrency,
@@ -52,32 +53,31 @@ export function ExecutiveSummary({ plan }: { plan: MediaPlan }) {
         </div>
       </div>
 
-      <Card>
+      <Card accent="cyan">
         <CardContent className="pt-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <Metric label="Media budget" value={formatCurrency(plan.netMediaBudget, plan.currency)} />
             <Metric
-              label="Total budget"
-              value={formatCurrency(plan.totalBudget, plan.currency)}
-              hint={`Agency fee ${plan.agencyFeePct}%`}
+              label="Plan duration"
+              value={`${months} ${months === 1 ? "month" : "months"}`}
             />
-            <Metric
-              label="Net media budget"
-              value={formatCurrency(plan.netMediaBudget, plan.currency)}
-            />
+            <Metric label="Active platforms" value={String(plan.platforms.filter((p) => p.enabled).length)} />
+            <Metric label="Geography groups" value={String(plan.geographies.length)} />
             <Metric label="Forecast impressions" value={formatNumber(totals.impressions)} />
             <Metric label="Forecast clicks" value={formatNumber(totals.clicks)} />
-            <Metric label="Forecast LPVs" value={formatNumber(totals.lpvs)} />
             <Metric label="Forecast leads" value={formatNumber(totals.leads)} />
             <Metric
-              label="Blended CPL"
+              label={`Blended ${plan.primaryKPI?.toUpperCase().includes("CPL") ? "CPL" : "CPL"}`}
               value={formatCurrency(totals.blendedCPL, plan.currency)}
               hint={plan.primaryKPITarget ? `Target: ${formatCurrency(plan.primaryKPITarget, plan.currency)}` : undefined}
             />
-            <Metric
-              label="Blended CPC"
-              value={formatCurrency(totals.blendedCPC, plan.currency)}
-            />
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="pt-5">
+          <p className="text-sm leading-relaxed text-foreground/90">{generatePlanSummary(plan)}</p>
         </CardContent>
       </Card>
     </div>

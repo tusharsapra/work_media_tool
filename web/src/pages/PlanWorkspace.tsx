@@ -58,7 +58,7 @@ export function PlanWorkspace() {
         </TabsList>
 
         <TabsContent value="dashboard">
-          <StakeholderDashboard plan={plan} />
+          <StakeholderDashboard plan={plan} clientId={clientId} />
         </TabsContent>
 
         <TabsContent value="plan">

@@ -40,6 +40,24 @@ export function BudgetAllocationCharts({ plan }: { plan: MediaPlan }) {
       .map(([month, value]) => ({ month: formatMonth(month), value }));
   }, [plan.rows]);
 
+  const byFunnel = useMemo(() => {
+    const labels: Record<string, string> = {
+      awareness: "Awareness",
+      consideration: "Consideration",
+      decision: "Decision",
+      lead_gen: "Lead gen",
+      retention: "Retention",
+    };
+    const map = new Map<string, number>();
+    plan.rows.forEach((r) => map.set(r.funnelStage, (map.get(r.funnelStage) ?? 0) + r.budget));
+    return Array.from(map.entries())
+      .map(([stage, value]) => ({ stage: labels[stage] ?? stage, value }))
+      .sort((a, b) => b.value - a.value);
+  }, [plan.rows]);
+
+  const totalBudget = plan.rows.reduce((s, r) => s + r.budget, 0);
+  const pct = (v: number) => (totalBudget > 0 ? `${((v / totalBudget) * 100).toFixed(0)}%` : "0%");
+
   return (
     <div className="space-y-4">
       <div>
@@ -161,6 +179,33 @@ export function BudgetAllocationCharts({ plan }: { plan: MediaPlan }) {
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardContent className="pt-6">
+          <h3 className="text-sm font-bold tracking-tight mb-4">By funnel stage</h3>
+          <div className="space-y-3">
+            {byFunnel.map((d, i) => (
+              <div key={d.stage}>
+                <div className="flex items-center justify-between text-sm mb-1">
+                  <span className="font-medium">{d.stage}</span>
+                  <span className="text-muted-foreground">
+                    {pct(d.value)} · {formatCurrency(d.value, plan.currency)}
+                  </span>
+                </div>
+                <div className="h-2 rounded-full bg-border overflow-hidden">
+                  <div
+                    className="h-full rounded-full"
+                    style={{
+                      width: pct(d.value),
+                      backgroundColor: armTheme.chartPalette[i % armTheme.chartPalette.length],
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

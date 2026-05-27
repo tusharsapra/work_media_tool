@@ -1,36 +1,11 @@
 import { useMemo } from "react";
-import type { MediaPlan, Platform } from "@mpa/shared";
+import type { MediaPlan } from "@mpa/shared";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PLATFORMS } from "@/data/defaults";
 import { armTheme } from "@/theme/armTheme";
 import { formatCurrency, formatNumber } from "@/utils/formatters";
-
-const FUNNEL_LABEL: Record<string, string> = {
-  awareness: "Top of funnel",
-  consideration: "Mid of funnel",
-  decision: "Bottom of funnel",
-  lead_gen: "Lead gen",
-  retention: "Retention",
-};
-
-function rationale(platform: Platform, funnel: string): string {
-  if (funnel === "decision" || funnel === "lead_gen") {
-    if (platform === "google_search" || platform === "bing")
-      return "Captures high-intent search demand and drives bottom-funnel conversions.";
-    if (platform === "linkedin")
-      return "Reaches professional decision-makers with high-value targeting.";
-    if (platform === "meta") return "Efficient nurture and retargeting against warm audiences.";
-  }
-  if (funnel === "awareness") {
-    if (platform === "youtube") return "Drives brand recall and aided search lift via video.";
-    if (platform === "meta") return "Efficient reach across Facebook and Instagram audiences.";
-    if (platform === "tiktok") return "Reaches younger audiences with high engagement formats.";
-    if (platform === "programmatic" || platform === "google_display")
-      return "Scales reach across publisher inventory at low CPM.";
-  }
-  return "Selected for funnel coverage relevant to the objective.";
-}
+import { FUNNEL_ROLE_LABEL, platformWhyIncluded } from "@/utils/insightEngine";
 
 export function PlatformRole({ plan }: { plan: MediaPlan }) {
   const cards = useMemo(() => {
@@ -70,12 +45,12 @@ export function PlatformRole({ plan }: { plan: MediaPlan }) {
               </div>
               <div className="flex items-center gap-2 mb-3">
                 <Badge variant="muted" className="capitalize">
-                  {FUNNEL_LABEL[c.funnelStage]}
+                  {FUNNEL_ROLE_LABEL[c.funnelStage]}
                 </Badge>
                 <Badge variant="default">{c.dealType}</Badge>
               </div>
               <p className="text-xs text-muted-foreground mb-3">
-                {rationale(c.platform, c.funnelStage)}
+                {platformWhyIncluded(c.platform, c.funnelStage)}
               </p>
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div>

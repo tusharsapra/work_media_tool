@@ -3,13 +3,21 @@ import type { MediaPlan } from "@mpa/shared";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { calculatePlanTotals } from "@/utils/forecastEngine";
+import { getGeographyRecommendation, GEO_REC_VARIANT } from "@/utils/insightEngine";
 import { formatCurrency, formatNumber } from "@/utils/formatters";
 
 export function GeographyStrategy({ plan }: { plan: MediaPlan }) {
+  const blendedCpl = useMemo(() => calculatePlanTotals(plan.rows).blendedCPL, [plan.rows]);
   const rows = useMemo(() => {
     return plan.geographies.map((g) => {
       const rowsInGeo = plan.rows.filter((r) => r.geographyId === g.id);
       const t = calculatePlanTotals(rowsInGeo);
+      const recommendation = getGeographyRecommendation({
+        budgetShare: g.budgetShare,
+        cpl: t.blendedCPL,
+        blendedCpl,
+        priority: g.priority,
+      });
       return {
         id: g.id,
         name: g.name,
@@ -18,9 +26,11 @@ export function GeographyStrategy({ plan }: { plan: MediaPlan }) {
         budget: t.budget,
         leads: t.leads,
         cpl: t.blendedCPL,
+        notes: g.notes,
+        recommendation,
       };
     });
-  }, [plan]);
+  }, [plan, blendedCpl]);
 
   return (
     <div className="space-y-3">
@@ -38,12 +48,16 @@ export function GeographyStrategy({ plan }: { plan: MediaPlan }) {
                 <th className="px-3 py-2 text-right">Expected leads</th>
                 <th className="px-3 py-2 text-right">Expected CPL</th>
                 <th className="px-3 py-2">Priority</th>
+                <th className="px-3 py-2">Recommendation</th>
               </tr>
             </thead>
             <tbody>
               {rows.map((r) => (
-                <tr key={r.id} className="border-b border-border/60">
-                  <td className="px-3 py-2 font-semibold">{r.name}</td>
+                <tr key={r.id} className="border-b border-border/60 align-top">
+                  <td className="px-3 py-2">
+                    <div className="font-semibold">{r.name}</div>
+                    {r.notes && <div className="text-xs text-muted-foreground mt-0.5">{r.notes}</div>}
+                  </td>
                   <td className="px-3 py-2 text-right">{r.share.toFixed(1)}%</td>
                   <td className="px-3 py-2 text-right">{formatCurrency(r.budget, plan.currency)}</td>
                   <td className="px-3 py-2 text-right">{formatNumber(r.leads)}</td>
@@ -63,6 +77,9 @@ export function GeographyStrategy({ plan }: { plan: MediaPlan }) {
                     >
                       {r.priority}
                     </Badge>
+                  </td>
+                  <td className="px-3 py-2">
+                    <Badge variant={GEO_REC_VARIANT[r.recommendation]}>{r.recommendation}</Badge>
                   </td>
                 </tr>
               ))}
