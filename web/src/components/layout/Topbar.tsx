@@ -3,6 +3,7 @@ import { ChevronRight } from "lucide-react";
 import { AiModeBadge } from "./AiModeBadge";
 import { Badge } from "@/components/ui/badge";
 import { usePlanStore } from "@/store/usePlanStore";
+import { groupById, groupBySlug } from "@/data/projectGroups";
 
 const STATUS_VARIANT = {
   draft: "muted",
@@ -22,7 +23,13 @@ export function Topbar() {
   const plan =
     params.planId && client ? client.plans.find((p) => p.id === params.planId) : undefined;
 
-  const segments: { label: string; to?: string }[] = [{ label: "Clients", to: "/" }];
+  const segments: { label: string; to?: string }[] = [{ label: "Projects", to: "/" }];
+
+  // Group breadcrumb — from the route param on /projects/:group, or from the active project.
+  const routeGroup = params.group ? groupBySlug(params.group) : undefined;
+  const projectGroup = client ? groupById(client.projectGroup) : routeGroup;
+  if (projectGroup) segments.push({ label: projectGroup.label, to: `/projects/${projectGroup.slug}` });
+
   if (client) segments.push({ label: client.name, to: `/clients/${client.id}` });
   if (plan) segments.push({ label: plan.name });
   else if (location.pathname.endsWith("/wizard")) segments.push({ label: "New plan" });

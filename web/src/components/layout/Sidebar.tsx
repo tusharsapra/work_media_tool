@@ -1,13 +1,12 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { Users, LayoutDashboard, FileText, ChevronLeft } from "lucide-react";
+import { LayoutGrid, LayoutDashboard, FileText, ChevronLeft } from "lucide-react";
 import { BrandMark } from "./BrandMark";
 import { Button } from "@/components/ui/button";
 import { usePlanStore } from "@/store/usePlanStore";
+import { groupById } from "@/data/projectGroups";
 import { cn } from "@/lib/utils";
 
-const navItems = [
-  { to: "/", label: "Clients", icon: Users, end: true },
-];
+const navItems = [{ to: "/", label: "Projects", icon: LayoutGrid, end: true }];
 
 export function Sidebar() {
   const collapsed = usePlanStore((s) => s.ui.sidebarCollapsed);
@@ -62,6 +61,13 @@ export function Sidebar() {
             <div className="px-3 text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-2">
               Current
             </div>
+            <NavLink
+              to={`/projects/${groupById(currentClient.projectGroup).slug}`}
+              className="flex items-center gap-3 px-3 py-2 rounded-[12px] text-xs font-medium text-muted-foreground hover:bg-background transition-colors"
+            >
+              <LayoutGrid className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">{groupById(currentClient.projectGroup).label}</span>
+            </NavLink>
             <NavLink
               to={`/clients/${currentClient.id}`}
               className={({ isActive }) =>

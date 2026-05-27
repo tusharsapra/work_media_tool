@@ -195,6 +195,121 @@ export const GEO_PRESETS: GeoPreset[] = [
   { id: "india_tier_2", label: "India Tier 2", type: "city" },
 ];
 
+// --- V2 geography planning ---------------------------------------------------------------------
+// India city/region/tier examples used as *optional* picks — never auto-selected.
+export const INDIA_CITIES: string[] = [
+  "Delhi NCR",
+  "Mumbai",
+  "Bangalore",
+  "Hyderabad",
+  "Chennai",
+  "Pune",
+  "Kolkata",
+  "Ahmedabad",
+  "Jaipur",
+  "Lucknow",
+  "Chandigarh",
+  "Kochi",
+  "Indore",
+  "Surat",
+  "Nagpur",
+  "Coimbatore",
+];
+
+export const INDIA_STATES: string[] = [
+  "Maharashtra",
+  "Delhi",
+  "Karnataka",
+  "Tamil Nadu",
+  "Telangana",
+  "Gujarat",
+  "Uttar Pradesh",
+  "West Bengal",
+  "Rajasthan",
+  "Kerala",
+  "Madhya Pradesh",
+  "Punjab",
+  "Haryana",
+  "Andhra Pradesh",
+];
+
+export const INDIA_REGIONS: string[] = [
+  "North India",
+  "South India",
+  "West India",
+  "East India",
+  "Central India",
+];
+
+export const INDIA_TIERS: string[] = ["Tier 1", "Tier 2", "Tier 3"];
+
+// Global examples — optional only; do NOT force NAM/SAS/WEU defaults.
+export const GLOBAL_REGIONS: string[] = [
+  "North America",
+  "Europe",
+  "Middle East",
+  "South Asia",
+  "Southeast Asia",
+  "East Asia",
+  "Africa",
+  "LATAM",
+  "Australia / New Zealand",
+];
+
+// Account-based / custom grouping templates for India planning. Each is an editable starting point.
+export interface AccountBasedTemplate {
+  name: string;
+  suggestedLocations: string[];
+  note: string;
+}
+
+export const ACCOUNT_BASED_TEMPLATES: AccountBasedTemplate[] = [
+  {
+    name: "Priority Branch Cities",
+    suggestedLocations: ["Delhi NCR", "Mumbai", "Pune", "Bangalore"],
+    note: "Strongest sales coverage",
+  },
+  {
+    name: "Dealer Network Markets",
+    suggestedLocations: ["Ahmedabad", "Surat", "Jaipur", "Indore"],
+    note: "Active dealer/partner presence",
+  },
+  {
+    name: "High Intent Markets",
+    suggestedLocations: ["Bangalore", "Hyderabad", "Chennai"],
+    note: "High historical conversion intent",
+  },
+  {
+    name: "Expansion Markets",
+    suggestedLocations: ["Lucknow", "Nagpur", "Coimbatore"],
+    note: "New growth markets to develop",
+  },
+  {
+    name: "Sales Team Priority Markets",
+    suggestedLocations: ["Delhi NCR", "Mumbai", "Kolkata"],
+    note: "Flagged by the sales team",
+  },
+  {
+    name: "Test Markets",
+    suggestedLocations: ["Kochi", "Chandigarh"],
+    note: "Controlled markets for testing",
+  },
+];
+
+export const GEOGRAPHY_PLAN_TYPES: { id: "india" | "global" | "custom"; label: string; description: string }[] = [
+  { id: "india", label: "India plan", description: "Plan across Indian cities, states, regions, tiers, or account-based groups." },
+  { id: "global", label: "Global / international plan", description: "Plan across countries, international regions, or custom groups." },
+  { id: "custom", label: "Custom geography groups", description: "Build your own geography groups from scratch." },
+];
+
+export const INDIA_STRUCTURES: { id: "city" | "state" | "region" | "tier" | "account_based"; label: string }[] = [
+  { id: "city", label: "City-level" },
+  { id: "state", label: "State-level" },
+  { id: "region", label: "Region-level" },
+  { id: "tier", label: "Tier-level" },
+  { id: "account_based", label: "Account-based / custom grouping" },
+];
+
 export interface PlanTypeInfo {
   id: PlanType;
   label: string;

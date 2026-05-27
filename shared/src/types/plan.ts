@@ -48,6 +48,12 @@ export type Platform =
 
 export type GeographyType = "country" | "region" | "state" | "city" | "custom";
 
+// V2: top-level geography planning mode + India sub-structure.
+export type GeographyPlanType = "india" | "global" | "custom";
+export type IndiaStructure = "city" | "state" | "region" | "tier" | "account_based";
+
+export type CompetitionLevel = "high" | "medium" | "low";
+
 export type AssumptionSource = "benchmark" | "user_override" | "uploaded_data";
 
 export interface GeographyGroup {
@@ -55,8 +61,10 @@ export interface GeographyGroup {
   name: string;
   type: GeographyType;
   budgetShare: number; // 0–100
+  budgetLocked?: boolean; // V2: lock share and redistribute the rest
+  locations?: string[]; // V2: included cities/countries/markets
   priority?: Priority;
-  competition?: string;
+  competition?: CompetitionLevel;
   notes?: string;
 }
 
@@ -68,6 +76,7 @@ export interface PlatformPlan {
   primaryKPI: string;
   budgetShare: number; // 0–100 of net media budget
   budget: number; // absolute dollar amount, derived from share
+  budgetLocked?: boolean; // V2: lock budget and redistribute the rest
   enabled: boolean;
   notes?: string;
 }
@@ -125,6 +134,16 @@ export interface KPITarget {
   value: number;
 }
 
+// V2: structured planning notes captured in the wizard / dashboard and exported to Excel.
+export interface PlanningNotes {
+  internal?: string;
+  client?: string;
+  assumptions?: string;
+  budgetRationale?: string;
+  geographyRationale?: string;
+  platformRationale?: string;
+}
+
 export interface MediaPlan {
   id: string;
   clientId: string;
@@ -136,17 +155,20 @@ export interface MediaPlan {
   planningStart: string; // YYYY-MM-DD
   planningEnd: string;
   totalBudget: number;
-  agencyFeePct: number; // 0–25
-  netMediaBudget: number;
+  agencyFeePct: number; // retained for back-compat; V2 wizard always sets 0
+  netMediaBudget: number; // V2: equals totalBudget (no agency fee in the flow)
   objective: Objective;
   primaryKPI: string;
   primaryKPITarget?: number; // optional user-entered target
   secondaryKPIs: string[];
   funnelSplit: FunnelSplit;
+  geographyPlanType?: GeographyPlanType;
+  indiaStructure?: IndiaStructure;
   geographies: GeographyGroup[];
   platforms: PlatformPlan[];
   assumptions: ForecastAssumption[];
   rows: MediaPlanRow[];
+  notes?: PlanningNotes;
   createdAt: string;
   updatedAt: string;
 }
@@ -162,6 +184,8 @@ export interface WizardState {
   totalBudget: number;
   agencyFeePct: number;
   geographyType: GeographyType;
+  geographyPlanType: GeographyPlanType;
+  indiaStructure?: IndiaStructure;
   geographies: GeographyGroup[];
   objective: Objective;
   primaryKPI: string;
@@ -170,4 +194,5 @@ export interface WizardState {
   funnelSplit: FunnelSplit;
   platforms: PlatformPlan[];
   assumptions: ForecastAssumption[];
+  notes: PlanningNotes;
 }

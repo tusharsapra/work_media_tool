@@ -62,6 +62,9 @@ export const PlatformSchema = z.enum([
 ]);
 
 export const GeographyTypeSchema = z.enum(["country", "region", "state", "city", "custom"]);
+export const GeographyPlanTypeSchema = z.enum(["india", "global", "custom"]);
+export const IndiaStructureSchema = z.enum(["city", "state", "region", "tier", "account_based"]);
+export const CompetitionLevelSchema = z.enum(["high", "medium", "low"]);
 export const AssumptionSourceSchema = z.enum(["benchmark", "user_override", "uploaded_data"]);
 
 export const GeographyGroupSchema = z.object({
@@ -69,8 +72,10 @@ export const GeographyGroupSchema = z.object({
   name: z.string().min(1),
   type: GeographyTypeSchema,
   budgetShare: z.number().min(0).max(100),
+  budgetLocked: z.boolean().optional(),
+  locations: z.array(z.string()).optional(),
   priority: PrioritySchema.optional(),
-  competition: z.string().optional(),
+  competition: CompetitionLevelSchema.optional(),
   notes: z.string().optional(),
 });
 
@@ -82,8 +87,18 @@ export const PlatformPlanSchema = z.object({
   primaryKPI: z.string(),
   budgetShare: z.number().min(0).max(100),
   budget: z.number().min(0),
+  budgetLocked: z.boolean().optional(),
   enabled: z.boolean(),
   notes: z.string().optional(),
+});
+
+export const PlanningNotesSchema = z.object({
+  internal: z.string().optional(),
+  client: z.string().optional(),
+  assumptions: z.string().optional(),
+  budgetRationale: z.string().optional(),
+  geographyRationale: z.string().optional(),
+  platformRationale: z.string().optional(),
 });
 
 export const ForecastAssumptionSchema = z.object({
@@ -152,10 +167,13 @@ export const MediaPlanSchema = z.object({
   primaryKPITarget: z.number().optional(),
   secondaryKPIs: z.array(z.string()),
   funnelSplit: FunnelSplitSchema,
+  geographyPlanType: GeographyPlanTypeSchema.optional(),
+  indiaStructure: IndiaStructureSchema.optional(),
   geographies: z.array(GeographyGroupSchema),
   platforms: z.array(PlatformPlanSchema),
   assumptions: z.array(ForecastAssumptionSchema),
   rows: z.array(MediaPlanRowSchema),
+  notes: PlanningNotesSchema.optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });

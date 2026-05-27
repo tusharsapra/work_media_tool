@@ -13,12 +13,12 @@ export function PlanTypeSelector() {
   const initWizard = usePlanStore((s) => s.initWizardForPlanType);
 
   if (!client) {
-    return <div className="text-muted-foreground">Client not found.</div>;
+    return <div className="text-muted-foreground">Project not found.</div>;
   }
 
   const handleSelect = (planType: PlanType, enabled: boolean) => {
     if (!enabled) return;
-    initWizard(planType, client.id, client.currency);
+    initWizard(planType, client.id, client.currency ?? "INR");
     navigate(`/clients/${client.id}/plans/new/wizard`);
   };
 
