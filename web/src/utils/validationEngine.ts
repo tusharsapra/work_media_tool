@@ -3,19 +3,27 @@ import type { ForecastAssumption, MediaPlan, ValidationIssue, WizardState } from
 const sumWithinTolerance = (sum: number, target: number, tolerance = 0.5) =>
   Math.abs(sum - target) <= tolerance;
 
+const shareGap = (sum: number) => {
+  const diff = 100 - sum;
+  if (diff > 0) return `Add ${diff.toFixed(1)}% more`;
+  return `Remove ${Math.abs(diff).toFixed(1)}%`;
+};
+
 export function validateWizardStep1(w: WizardState): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
-  if (!w.name?.trim()) issues.push({ code: "name_required", severity: "error", field: "name", message: "Plan name is required." });
-  if (!w.planningStart) issues.push({ code: "start_required", severity: "error", field: "planningStart", message: "Planning start date is required." });
-  if (!w.planningEnd) issues.push({ code: "end_required", severity: "error", field: "planningEnd", message: "Planning end date is required." });
+  if (!w.name?.trim())
+    issues.push({ code: "name_required", severity: "error", field: "name", message: "Add a plan name before continuing." });
+  if (!w.currency)
+    issues.push({ code: "currency_required", severity: "error", field: "currency", message: "Select a currency for this plan." });
+  if (!w.planningStart)
+    issues.push({ code: "start_required", severity: "error", field: "planningStart", message: "Choose a planning start date." });
+  if (!w.planningEnd)
+    issues.push({ code: "end_required", severity: "error", field: "planningEnd", message: "Choose a planning end date." });
   if (w.planningStart && w.planningEnd && new Date(w.planningEnd) <= new Date(w.planningStart)) {
-    issues.push({ code: "end_after_start", severity: "error", field: "planningEnd", message: "End date must be after start date." });
+    issues.push({ code: "end_after_start", severity: "error", field: "planningEnd", message: "End date should be after the start date." });
   }
   if (!w.totalBudget || w.totalBudget <= 0) {
-    issues.push({ code: "budget_positive", severity: "error", field: "totalBudget", message: "Total budget must be greater than 0." });
-  }
-  if (w.agencyFeePct < 0 || w.agencyFeePct > 25) {
-    issues.push({ code: "fee_range", severity: "error", field: "agencyFeePct", message: "Agency fee must be between 0% and 25%." });
+    issues.push({ code: "budget_positive", severity: "error", field: "totalBudget", message: "Add the total media budget before continuing." });
   }
   return issues;
 }
@@ -23,15 +31,19 @@ export function validateWizardStep1(w: WizardState): ValidationIssue[] {
 export function validateWizardStep2(w: WizardState): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
   if (w.geographies.length === 0) {
-    issues.push({ code: "no_geo", severity: "error", message: "Select or add at least one geography group." });
+    issues.push({ code: "no_geo", severity: "error", message: "Add at least one geography group to continue." });
     return issues;
+  }
+  const unnamed = w.geographies.filter((g) => !g.name.trim()).length;
+  if (unnamed > 0) {
+    issues.push({ code: "geo_unnamed", severity: "error", message: `Name every geography group — ${unnamed} still need a name.` });
   }
   const sum = w.geographies.reduce((s, g) => s + (g.budgetShare || 0), 0);
   if (!sumWithinTolerance(sum, 100)) {
     issues.push({
       code: "geo_share_sum",
       severity: "error",
-      message: `Geography budget shares must sum to 100%. Currently ${sum.toFixed(1)}%.`,
+      message: `Geography split must total 100%. You're currently at ${sum.toFixed(1)}%. ${shareGap(sum)} or use "Normalize to 100%".`,
     });
   }
   return issues;
@@ -39,8 +51,8 @@ export function validateWizardStep2(w: WizardState): ValidationIssue[] {
 
 export function validateWizardStep3(w: WizardState): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
-  if (!w.objective) issues.push({ code: "objective_required", severity: "error", message: "Select a primary objective." });
-  if (!w.primaryKPI) issues.push({ code: "kpi_required", severity: "error", message: "Select a primary KPI." });
+  if (!w.objective) issues.push({ code: "objective_required", severity: "error", message: "Pick a primary objective." });
+  if (!w.primaryKPI) issues.push({ code: "kpi_required", severity: "error", message: "Pick a primary KPI." });
   const funnelSum =
     w.funnelSplit.awareness +
     w.funnelSplit.consideration +
@@ -50,7 +62,7 @@ export function validateWizardStep3(w: WizardState): ValidationIssue[] {
     issues.push({
       code: "funnel_sum",
       severity: "error",
-      message: `Funnel split must sum to 100%. Currently ${funnelSum.toFixed(1)}%.`,
+      message: `Funnel split must total 100%. You're at ${funnelSum.toFixed(1)}%. ${shareGap(funnelSum)}.`,
     });
   }
   return issues;
@@ -60,7 +72,7 @@ export function validateWizardStep4(w: WizardState): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
   const enabled = w.platforms.filter((p) => p.enabled);
   if (enabled.length === 0) {
-    issues.push({ code: "no_platforms", severity: "error", message: "Enable at least one platform." });
+    issues.push({ code: "no_platforms", severity: "error", message: "Turn on at least one platform to continue." });
     return issues;
   }
   const sum = enabled.reduce((s, p) => s + (p.budgetShare || 0), 0);
@@ -68,7 +80,7 @@ export function validateWizardStep4(w: WizardState): ValidationIssue[] {
     issues.push({
       code: "platform_share_sum",
       severity: "error",
-      message: `Platform budget shares must sum to 100%. Currently ${sum.toFixed(1)}%.`,
+      message: `Platform split must total 100%. You're at ${sum.toFixed(1)}%. ${shareGap(sum)} or use "Normalize to 100%".`,
     });
   }
   return issues;

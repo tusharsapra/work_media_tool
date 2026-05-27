@@ -1,5 +1,5 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { ChevronLeft, ChevronRight, Check } from "lucide-react";
+import { ChevronLeft, ChevronRight, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { WizardStepper } from "./wizard/WizardStepper";
 import { WizardStep1Setup } from "./wizard/WizardStep1Setup";
@@ -72,7 +72,8 @@ export function PlanningWizard() {
   };
 
   const onGenerate = () => {
-    const netBudget = wizard.totalBudget * (1 - wizard.agencyFeePct / 100);
+    // V2: no agency fee — net media budget equals the total media budget.
+    const netBudget = wizard.totalBudget;
     const months = monthsBetween(wizard.planningStart, wizard.planningEnd);
     const enabledPlatforms = wizard.platforms.filter((p) => p.enabled);
 
@@ -116,17 +117,20 @@ export function PlanningWizard() {
       planningStart: wizard.planningStart,
       planningEnd: wizard.planningEnd,
       totalBudget: wizard.totalBudget,
-      agencyFeePct: wizard.agencyFeePct,
-      netMediaBudget: netBudget,
+      agencyFeePct: 0,
+      netMediaBudget: wizard.totalBudget,
       objective: wizard.objective,
       primaryKPI: wizard.primaryKPI,
       primaryKPITarget: wizard.primaryKPITarget,
       secondaryKPIs: wizard.secondaryKPIs,
       funnelSplit: wizard.funnelSplit,
+      geographyPlanType: wizard.geographyPlanType,
+      indiaStructure: wizard.indiaStructure,
       geographies: wizard.geographies,
       platforms: wizard.platforms,
       assumptions: wizard.assumptions,
       rows,
+      notes: wizard.notes,
       createdAt: now,
       updatedAt: now,
     };
@@ -137,14 +141,25 @@ export function PlanningWizard() {
     navigate(`/clients/${clientId}/plans/${plan.id}`);
   };
 
+  const onExit = () => {
+    resetWizard();
+    navigate(`/clients/${clientId}`);
+  };
+
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Plan generation</h1>
-        <p className="text-muted-foreground mt-1">
-          Step through the wizard to build your forecast. You can edit assumptions later from the
-          plan workspace.
-        </p>
+    <div className="max-w-4xl mx-auto pb-24">
+      <div className="mb-6 flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Plan generation</h1>
+          <p className="text-muted-foreground mt-1">
+            Step through the wizard to build your forecast. You can edit assumptions later from the
+            plan workspace.
+          </p>
+        </div>
+        <Button variant="ghost" onClick={onExit}>
+          <X className="h-4 w-4" />
+          Exit to project
+        </Button>
       </div>
 
       <WizardStepper steps={STEPS} current={step} />
@@ -158,22 +173,28 @@ export function PlanningWizard() {
         {step === 5 && <WizardReviewConfirm />}
       </div>
 
-      <div className="flex items-center justify-between">
-        <Button variant="secondary" onClick={onBack}>
-          <ChevronLeft className="h-4 w-4" />
-          {step === 0 ? "Cancel" : "Back"}
-        </Button>
-        {step < STEPS.length - 1 ? (
-          <Button onClick={onNext} disabled={!canGoNext}>
-            Next
-            <ChevronRight className="h-4 w-4" />
+      {/* Sticky wizard footer */}
+      <div className="fixed bottom-0 left-0 right-0 border-t border-border bg-card/95 backdrop-blur z-40">
+        <div className="max-w-4xl mx-auto px-8 py-3 flex items-center justify-between">
+          <Button variant="secondary" onClick={onBack}>
+            <ChevronLeft className="h-4 w-4" />
+            {step === 0 ? "Cancel" : "Back"}
           </Button>
-        ) : (
-          <Button onClick={onGenerate}>
-            <Check className="h-4 w-4" />
-            Generate plan
-          </Button>
-        )}
+          <div className="text-xs text-muted-foreground font-medium">
+            Step {step + 1} of {STEPS.length} · {STEPS[step].label}
+          </div>
+          {step < STEPS.length - 1 ? (
+            <Button onClick={onNext} disabled={!canGoNext}>
+              Continue
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          ) : (
+            <Button onClick={onGenerate}>
+              <Check className="h-4 w-4" />
+              Generate plan
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );
